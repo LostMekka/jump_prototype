@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jump;
+package jump.states;
 
 import jump.level.Level;
 import jump.level.PlayerEntity;
