@@ -29,7 +29,7 @@ public class StaticTile extends Tile{
 	}
 	
 	@Override
-	public void draw(int x, int y, int tileSize) {
+	public void draw(float x, float y, float tileSize) {
 		image.draw(x, y, tileSize, tileSize);
 	}
 	

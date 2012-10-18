@@ -38,6 +38,6 @@ public abstract class Entity implements Serializable {
 	}
 	
 	public abstract void tick(int ms);
-	public abstract void draw(int x, int y, int tileSize);
+	public abstract void draw(float x, float y, float tileSize);
 	
 }

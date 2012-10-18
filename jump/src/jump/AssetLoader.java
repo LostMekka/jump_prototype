@@ -4,7 +4,11 @@
  */
 package jump;
 
+import com.sun.org.apache.bcel.internal.generic.AALOAD;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.newdawn.slick.BigImage;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.Sound;
@@ -17,6 +21,7 @@ public class AssetLoader {
 	
 	private AssetLoader(){}
 
+	private static Image errorImage = null;
 	private static HashMap<String, Sound> sounds = new HashMap<>();
 	private static HashMap<String, Image> images = new HashMap<>();
 	
@@ -27,7 +32,14 @@ public class AssetLoader {
 			Image i = null;
 			try {
 				i = new Image(name);
-			} catch (SlickException ex) {}
+			} catch (Exception ex) {
+				if(errorImage == null){
+					try {
+						errorImage = new Image("error.png");
+					} catch (SlickException ex1) {}
+				}
+				return errorImage;
+			}
 			if(i != null){
 				images.put(name, i);
 			}

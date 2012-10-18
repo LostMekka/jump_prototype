@@ -4,6 +4,8 @@
  */
 package jump;
 
+import jump.level.Level;
+import jump.states.GameplayState;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.state.StateBasedGame;
@@ -20,7 +22,7 @@ public class MyGame extends StateBasedGame {
 
 	@Override
 	public void initStatesList(GameContainer gc) throws SlickException {
-		throw new UnsupportedOperationException("Not supported yet.");
+		addState(new GameplayState(new Level("level001", true)));
 	}
 	
 }

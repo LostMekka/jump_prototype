@@ -13,7 +13,7 @@ import org.newdawn.slick.SlickException;
  *
  * @author LostMekka
  */
-public class Jump {
+public class Main {
 
 	/**
 	 * @param args the command line arguments
@@ -24,7 +24,7 @@ public class Jump {
 			AppGameContainer c = new AppGameContainer(game, 800, 600, false);
 			c.start();
 		} catch (SlickException ex) {
-			Logger.getLogger(Jump.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 }
