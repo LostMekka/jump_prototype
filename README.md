@@ -1,4 +1,4 @@
-jump_prototype
+jump prototype
 ==============
 
-a jump&amp;run prototype
+a jump&amp;run prototype, coded 4fun.
