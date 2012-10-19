@@ -60,6 +60,7 @@ public abstract class Entity implements Serializable {
 	}
 
 	public void setState(EntityState state){
+		if(this.state != state) currImageIndex = 0;
 		this.state = state;
 		currImages = getImages(state, looksToTheLeft);
 		maxMsCount = getImageDuration(state);
@@ -72,6 +73,22 @@ public abstract class Entity implements Serializable {
 			int add = msCounter / maxMsCount;
 			msCounter %= maxMsCount;
 			currImageIndex = (currImageIndex + add) % currImages.length;
+		}
+		// movement
+		if(isMovable()){
+			if(leftPressed) vx = -getVxOnKeyPressed(runPressed);
+			if(rightPressed) vx = getVxOnKeyPressed(runPressed);
+			if(upPressed) ay = getAyOnUpPressed();
+			// TODO: handle pressed == false
+			vx += ax * (float)ms / 1000f;		
+			if(usesGravity()){
+				vy += (ay - Level.GRAVITY) * (float)ms / 1000f;
+			} else {
+				vy += ay * (float)ms / 1000f;
+			}
+			x += vx * (float)ms / 1000f;
+			y -= vy * (float)ms / 1000f;
+			level.correctEntityPosition(this);
 		}
 		// direction
 		if(vx > 0f) setDirectionToLeft(false);
@@ -91,21 +108,6 @@ public abstract class Entity implements Serializable {
 		if((vy < 0f) && (state != EntityState.fall)) setState(EntityState.fall);
 		if((vx != 0f) && (state == EntityState.idle)) setState(EntityState.walk);
 		if((vx == 0f) && (state == EntityState.walk)) setState(EntityState.idle);		
-		// movement
-		if(isMovable()){
-			if(leftPressed) vx = -getVxOnKeyPressed(runPressed);
-			if(leftPressed) vx = getVxOnKeyPressed(runPressed);
-			if(leftPressed) ay = getAyOnUpPressed();
-			vx += ax * (float)ms / 1000f;		
-			if(usesGravity()){
-				vy += (ay - Level.GRAVITY) * (float)ms / 1000f;
-			} else {
-				vy += ay * (float)ms / 1000f;
-			}
-			x += vx * (float)ms / 1000f;
-			y -= vy * (float)ms / 1000f;
-			level.correctEntityPosition(this);
-		}
 		// internal tick
 		tickInternal(level, ms, leftPressed, rightPressed, upPressed, runPressed);
 	}
