@@ -23,6 +23,7 @@ public final class GameplayState extends BasicGameState {
 	private Level level;
 	private float camX, camY, tileSize;
 	private PlayerEntity player;
+	private Entity focusedEntity;
 
 	public GameplayState(Level level) {
 		setLevel(level);
@@ -35,8 +36,8 @@ public final class GameplayState extends BasicGameState {
 	public void setLevel(Level level) {
 		this.level = level;
 		player = level.getPlayer();
-		camX = player.x;
-		camY = player.y;
+		focusedEntity = player;
+		focusCameraOnTile(Math.round(player.x), Math.round(player.y));
 		tileSize = 30f;
 	}
 	
@@ -55,14 +56,36 @@ public final class GameplayState extends BasicGameState {
 		for(int y=0; y<level.getHeight(); y++){
 			for(int x=0; x<level.getWidth(); x++){
 				level.getTile(x, y).draw(
-						(x - camX) * Level.TILE_SIZE + gc.getWidth() / 2f, 
-						(y - camY) * Level.TILE_SIZE + gc.getHeight() / 2f);
+						Math.round((x * Level.TILE_SIZE - camX + gc.getWidth() / 2f)), 
+						Math.round((y * Level.TILE_SIZE - camY + gc.getHeight() / 2f)));
 			}
 		}
 		for(Entity e : level){
-			e.draw((e.x - camX) * Level.TILE_SIZE + gc.getWidth() / 2f, 
-					(e.y - camY) * Level.TILE_SIZE + gc.getHeight() / 2f);
+			e.draw(Math.round((e.x * Level.TILE_SIZE - camX + gc.getWidth() / 2f)), 
+					Math.round((e.y * Level.TILE_SIZE - camY + gc.getHeight() / 2f)));
 		}
+	}
+	
+	private void updateCamera(GameContainer gc){
+		float rx = (float)gc.getWidth() * 0.3f * 0.5f;
+		float ry = (float)gc.getHeight() * 0.3f * 0.5f;
+		float fx = (focusedEntity.x + 0.5f) * Level.TILE_SIZE;
+		float fy = (focusedEntity.y + 0.5f) * Level.TILE_SIZE;
+		if(fx < camX - rx) camX = fx + rx;
+		if(fx > camX + rx) camX = fx - rx;
+		if(fy < camY - ry) camY = fy + ry;
+		if(fy > camY + ry) camY = fy - ry;
+		applyLevelBorderToCamera();
+	}
+	
+	private void focusCameraOnTile(int x, int y){
+		camX = ((float)x + 0.5f) * (float)Level.TILE_SIZE;
+		camY = ((float)y + 0.5f) * (float)Level.TILE_SIZE;
+		applyLevelBorderToCamera();
+	}
+	
+	private void applyLevelBorderToCamera(){
+		
 	}
 
 	@Override
@@ -79,6 +102,7 @@ public final class GameplayState extends BasicGameState {
 				e.tick(level, i, false, false, false, false);
 			}
 		}
+		updateCamera(gc);
 	}
 	
 }

@@ -18,7 +18,7 @@ import jump.AssetLoader;
  */
 public class Level implements Serializable, Iterable<Entity> {
 	
-	public static final float GRAVITY = 0.5f;
+	public static final float GRAVITY = 30f;
 	public static final int TILE_SIZE = 30;
 	
 	private Tile[] tiles;
@@ -142,10 +142,16 @@ public class Level implements Serializable, Iterable<Entity> {
 			}
 		}
 		if(!hc && !vc && dc){
-			if((e.x - ix) / (e.y - iy) > 1){
-				vc = true;
+			if(Math.abs(e.x - ix) > Math.abs(e.y - iy)){
+				if(((e.y < iy) && (e.vy > 0f)) || ((e.y > iy) && (e.vy < 0f))){
+					// jumped on an edge from below or fell on an edge from above
+					// reset motion. if this is not the case, the motion must continue
+					e.vy = 0f;
+					e.ay = 0f;
+				}
+				e.y = iy;
 			} else {
-				hc = true;
+				e.x = ix;
 			}
 		}
 		if(hc){

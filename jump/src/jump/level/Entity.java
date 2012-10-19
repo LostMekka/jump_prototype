@@ -76,10 +76,15 @@ public abstract class Entity implements Serializable {
 		}
 		// movement
 		if(isMovable()){
+			// inputs
 			if(leftPressed) vx = -getVxOnKeyPressed(runPressed);
 			if(rightPressed) vx = getVxOnKeyPressed(runPressed);
-			if(upPressed) ay = getAyOnUpPressed();
-			// TODO: handle pressed == false
+			if(!leftPressed && !rightPressed) vx = 0f;
+			if(upPressed && ((state == EntityState.walk) || (state == EntityState.idle))){
+				ay = getAyOnUpPressed();
+				vy = getInitialJunpVel();
+			}
+			// calc pos
 			vx += ax * (float)ms / 1000f;		
 			if(usesGravity()){
 				vy += (ay - Level.GRAVITY) * (float)ms / 1000f;
@@ -88,26 +93,27 @@ public abstract class Entity implements Serializable {
 			}
 			x += vx * (float)ms / 1000f;
 			y -= vy * (float)ms / 1000f;
+			// do collisions
 			level.correctEntityPosition(this);
-		}
-		// direction
-		if(vx > 0f) setDirectionToLeft(false);
-		if(vx < 0f) setDirectionToLeft(true);
-		// states
-		if(state == EntityState.jump){
-			jumpMsCounter += ms;
-			if((jumpMsCounter >= getmaxJumpTime()) || (vy < 0f)){
-				jumpMsCounter = 0;
+			// vertical handling
+			if((vy == 0f) && (state == EntityState.fall)) setState(EntityState.idle);
+			if((vy > 0f) && (state != EntityState.jump)) setState(EntityState.jump);
+			if(state == EntityState.jump){
+				jumpMsCounter += ms;
+				if((jumpMsCounter >= getmaxJumpTime()) || (vy < 0f) || !upPressed){
+					ay = 0f;
+					jumpMsCounter = 0;
+					setState(EntityState.fall);
+				}
+			} else if((vy < 0f) && (state != EntityState.fall)) {
 				setState(EntityState.fall);
 			}
+			// horizontal handling
+			if(vx > 0f) setDirectionToLeft(false);
+			if(vx < 0f) setDirectionToLeft(true);
+			if((vx != 0f) && (state == EntityState.idle)) setState(EntityState.walk);
+			if((vx == 0f) && (state == EntityState.walk)) setState(EntityState.idle);		
 		}
-		if((vy > 0f) && (state != EntityState.jump)){
-			jumpMsCounter = 0;
-			setState(EntityState.jump);
-		}
-		if((vy < 0f) && (state != EntityState.fall)) setState(EntityState.fall);
-		if((vx != 0f) && (state == EntityState.idle)) setState(EntityState.walk);
-		if((vx == 0f) && (state == EntityState.walk)) setState(EntityState.idle);		
 		// internal tick
 		tickInternal(level, ms, leftPressed, rightPressed, upPressed, runPressed);
 	}
@@ -124,6 +130,7 @@ public abstract class Entity implements Serializable {
 	public abstract boolean collidesOnForeground();
 	public abstract float getVxOnKeyPressed(boolean run);
 	public abstract float getAyOnUpPressed();
+	public abstract float getInitialJunpVel();
 	public abstract int getmaxJumpTime();
 	public abstract Image[] getImages(EntityState state, boolean facesLeft);
 	public abstract int getImageDuration(EntityState state);

@@ -21,9 +21,9 @@ public final class PlayerEntity extends Entity {
 	public float getVxOnKeyPressed(boolean run) {
 		float v;
 		if((state == EntityState.fall) || (state == EntityState.jump)){
-			v = 1f;
+			v = 3f;
 		} else {
-			v = 2f;
+			v = 4f;
 		}
 		if(run){
 			v *= 1.5f;
@@ -33,17 +33,17 @@ public final class PlayerEntity extends Entity {
 
 	@Override
 	public float getAyOnUpPressed() {
-		switch(state){
-			case idle: return -3f;
-			case walk: return -3f;
-			case jump: return -Level.GRAVITY * 0.9f;
-			default: return 0f;
-		}
+		return Level.GRAVITY * 0.7f;
+	}
+
+	@Override
+	public float getInitialJunpVel() {
+		return 6.5f;
 	}
 
 	@Override
 	public int getmaxJumpTime() {
-		return 3000;
+		return 500;
 	}
 	
 	@Override
