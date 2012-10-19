@@ -55,13 +55,13 @@ public final class GameplayState extends BasicGameState {
 		for(int y=0; y<level.getHeight(); y++){
 			for(int x=0; x<level.getWidth(); x++){
 				level.getTile(x, y).draw(
-						(x - camX) * tileSize + gc.getWidth() / 2f, 
-						(y - camY) * tileSize + gc.getHeight() / 2f, tileSize);
+						(x - camX) * Level.TILE_SIZE + gc.getWidth() / 2f, 
+						(y - camY) * Level.TILE_SIZE + gc.getHeight() / 2f);
 			}
 		}
 		for(Entity e : level){
-			e.draw((e.getX() - camX) * tileSize + gc.getWidth() / 2f, 
-					(e.getY() - camY) * tileSize + gc.getHeight() / 2f, tileSize);
+			e.draw((e.getX() - camX) * Level.TILE_SIZE + gc.getWidth() / 2f, 
+					(e.getY() - camY) * Level.TILE_SIZE + gc.getHeight() / 2f);
 		}
 	}
 
@@ -70,24 +70,23 @@ public final class GameplayState extends BasicGameState {
 		// handle input
 		Input in = gc.getInput();
 		if(in.isKeyDown(Input.KEY_SPACE)){
-			
+			player.upPressed();
 		}
+		boolean run = false;
 		if(in.isKeyDown(Input.KEY_LCONTROL)){
-			
+			run = true;
 		}
 		if(in.isKeyDown(Input.KEY_LEFT)){
-			
+			player.leftPressed(i, run);
 		}
 		if(in.isKeyDown(Input.KEY_RIGHT)){
-			
-		}
-		if(in.isKeyDown(Input.KEY_ADD)){
-			tileSize *= 1.01f;
-		}
-		if(in.isKeyDown(Input.KEY_SUBTRACT)){
-			tileSize /= 1.01f;
+			player.rigthPressed(i, run);
 		}
 		// do ticks
+		for(Entity e : level){
+			e.movementTick(i);
+		}
+		level.correctEntityPositions();
 		for(Entity e : level){
 			e.tick(i);
 		}

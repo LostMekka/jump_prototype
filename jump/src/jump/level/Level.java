@@ -18,6 +18,9 @@ import jump.AssetLoader;
  */
 public class Level implements Serializable, Iterable<Entity> {
 	
+	public static final float GRAVITY = 0.3f;
+	public static final int TILE_SIZE = 30;
+	
 	private Tile[] tiles;
 	private LinkedList<Entity> entities;
 	private int width, height;
@@ -104,6 +107,13 @@ public class Level implements Serializable, Iterable<Entity> {
 	
 	public Tile getTile(int x, int y){
 		return tiles[y * width + x];
+	}
+	
+	public void correctEntityPositions(){
+		for(Entity e : entities){
+			float x = e.getX();
+			float y = e.getY();
+		}
 	}
 	
 }

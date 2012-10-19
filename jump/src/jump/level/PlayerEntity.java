@@ -13,31 +13,79 @@ import org.newdawn.slick.Image;
  */
 public final class PlayerEntity extends Entity {
 
-	public enum PlayerState{ idle, walk, duck, jump, fall }
+	public enum PlayerState{ idle, walk, jump, fall }
 	
-	private int currImageIndex = 0, msCounter = 0, maxMsCount, maxImageCount;
-	private Image currImage, duckImage, jumpImage, fallImage;
+	private int currImageIndex = 0, msCounter = 0, maxMsCount, maxImageCount, jumpMsCounter = 0, maxJumpCounter = 1000;
+	private Image currImage, jumpImage, fallImage;
 	private Image[] walkImages, idleImages;
 	private PlayerState state;
+	private boolean looksToTheRight;
 	
 	public PlayerEntity(float x, float y) {
 		super(x, y);
-		// TODO: init the other images
-		duckImage = AssetLoader.getImage("player_duck.png");
+		looksToTheRight = true;
 		jumpImage = AssetLoader.getImage("player_jump.png");
 		fallImage = AssetLoader.getImage("player_fall.png");
-		idleImages = new Image[3];
-		idleImages[0] = AssetLoader.getImage("player_idle_1.png");
-		idleImages[1] = AssetLoader.getImage("player_idle_2.png");
-		idleImages[2] = AssetLoader.getImage("player_idle_3.png");
+		idleImages = new Image[4];
+		idleImages[0] = AssetLoader.getImage("player_idle_01.png");
+		idleImages[1] = AssetLoader.getImage("player_idle_02.png");
+		idleImages[2] = AssetLoader.getImage("player_idle_03.png");
+		idleImages[3] = AssetLoader.getImage("player_idle_04.png");
 		walkImages = new Image[5];
-		walkImages[0] = AssetLoader.getImage("player_walk_1.png");
-		walkImages[1] = AssetLoader.getImage("player_walk_2.png");
-		walkImages[2] = AssetLoader.getImage("player_walk_3.png");
-		walkImages[3] = AssetLoader.getImage("player_walk_4.png");
-		walkImages[4] = AssetLoader.getImage("player_walk_5.png");
+		walkImages[0] = AssetLoader.getImage("player_walk_01.png");
+		walkImages[1] = AssetLoader.getImage("player_walk_02.png");
+		walkImages[2] = AssetLoader.getImage("player_walk_03.png");
+		walkImages[3] = AssetLoader.getImage("player_walk_04.png");
+		walkImages[4] = AssetLoader.getImage("player_walk_05.png");
 		// TODO: init to idle
-		setState(PlayerState.walk);
+		setState(PlayerState.idle);
+	}
+
+	@Override
+	public float getVxOnKeyPressed(int ms, boolean run) {
+		float a = 0f;
+		if((state == PlayerState.fall) || (state == PlayerState.jump)){
+			a = 0.015f;
+		} else {
+			a = 0.3f;
+		}
+		if(run){
+			a *= 1.5f;
+		}
+		return a * ms;
+	}
+
+	@Override
+	public float getAyOnUpPressed() {
+		switch(state){
+			case idle: return 6f;
+			case walk: return 6f;
+			case jump: return 2.5f;
+			default: return 0f;
+		}
+	}
+
+	@Override
+	public boolean isMovable() {
+		return true;
+	}
+
+	@Override
+	public boolean usesGravity() {
+		return true;
+	}
+
+	@Override
+	public boolean collidesOnForeground() {
+		return true;
+	}
+
+	public boolean looksToTheRight() {
+		return looksToTheRight;
+	}
+
+	public void setDirection(boolean looksToTheRight) {
+		this.looksToTheRight = looksToTheRight;
 	}
 
 	public PlayerState getState() {
@@ -49,14 +97,9 @@ public final class PlayerEntity extends Entity {
 		currImageIndex = 0;
 		msCounter = 0;
 		switch(state){
-			case duck:
-				maxMsCount = 100000;
-				maxImageCount = 1;
-				currImage = duckImage;
-				break;
 			case idle:
-				maxMsCount = 180;
-				maxImageCount = 1;
+				maxMsCount = 450;
+				maxImageCount = 4;
 				currImage = idleImages[0];
 				break;
 			case jump:
@@ -93,11 +136,18 @@ public final class PlayerEntity extends Entity {
 					break;
 			}
 		}
+		if(state == PlayerState.jump){
+			jumpMsCounter += ms;
+			if(jumpMsCounter >= maxJumpCounter){
+				jumpMsCounter = 0;
+				state = PlayerState.fall;
+			}
+		}
 	}
 
 	@Override
-	public void draw(float x, float y, float tileSize) {
-		currImage.draw(x, y, tileSize, tileSize);
+	public void draw(float x, float y) {
+		currImage.draw(x, y);
 	}
 	
 }
