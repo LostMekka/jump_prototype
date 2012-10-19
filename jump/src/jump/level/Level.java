@@ -18,7 +18,7 @@ import jump.AssetLoader;
  */
 public class Level implements Serializable, Iterable<Entity> {
 	
-	public static final float GRAVITY = 0.3f;
+	public static final float GRAVITY = 0.5f;
 	public static final int TILE_SIZE = 30;
 	
 	private Tile[] tiles;
@@ -34,9 +34,9 @@ public class Level implements Serializable, Iterable<Entity> {
 			} catch (IOException ex) {
 				throw new RuntimeException("cannot find image \"" + name + ".png\"!", ex);
 			}
-			Tile error1 = new StaticTile(AssetLoader.getImage("error.png"), true);
-			Tile back1 = new StaticTile(AssetLoader.getImage("back254.png"), true);
-			Tile front1 = new StaticTile(AssetLoader.getImage("front254.png"), false);
+			Tile error1 = new StaticTile(AssetLoader.getImage("error.png", false), true);
+			Tile back1 = new StaticTile(AssetLoader.getImage("back254.png", false), true);
+			Tile front1 = new StaticTile(AssetLoader.getImage("front254.png", false), false);
 			width = image.getWidth();
 			height = image.getHeight();
 			tiles = new Tile[width * height];
@@ -55,7 +55,6 @@ public class Level implements Serializable, Iterable<Entity> {
 						playerEntity = new PlayerEntity(x, y);
 						entities.add(playerEntity);
 					}
-					if(x == 1) System.out.format("(%d - %d - %d)\n", fg, bg, en);
 				}
 			}
 		} else {
@@ -109,10 +108,55 @@ public class Level implements Serializable, Iterable<Entity> {
 		return tiles[y * width + x];
 	}
 	
-	public void correctEntityPositions(){
-		for(Entity e : entities){
-			float x = e.getX();
-			float y = e.getY();
+	private boolean isCollidable(Entity e, int x, int y){
+		if((x < 0) || (x >= width) || (y < 0) || (y >= height)) return true;
+		return (getTile(x, y).isCollidable() && e.collidesOnForeground());
+	}
+	
+	public void correctEntityPosition(Entity e){
+		int ix = Math.round(e.x);
+		int iy = Math.round(e.y);
+		boolean hc, vc, dc;
+		if(e.x < ix){
+			hc = isCollidable(e, ix - 1, iy);
+			if(e.y < iy){
+				// top left case
+			hc = isCollidable(e, ix - 1, iy);
+				vc = isCollidable(e, ix, iy - 1);
+				dc = isCollidable(e, ix - 1, iy - 1);
+			} else {
+				// bottom left case
+				vc = isCollidable(e, ix, iy + 1);
+				dc = isCollidable(e, ix - 1, iy + 1);
+			}
+		} else {
+				hc = isCollidable(e, ix + 1, iy);
+			if(e.y < iy){
+				// top right case
+				vc = isCollidable(e, ix, iy - 1);
+				dc = isCollidable(e, ix + 1, iy - 1);
+			} else {
+				// bottom right case
+				vc = isCollidable(e, ix, iy + 1);
+				dc = isCollidable(e, ix + 1, iy + 1);
+			}
+		}
+		if(!hc && !vc && dc){
+			if((e.x - ix) / (e.y - iy) > 1){
+				vc = true;
+			} else {
+				hc = true;
+			}
+		}
+		if(hc){
+			e.x = ix;
+			e.vx = 0f;
+			e.ax = 0f;
+		}
+		if(vc){
+			e.y = iy;
+			e.vy = 0f;
+			e.ay = 0f;
 		}
 	}
 	

@@ -16,5 +16,6 @@ public abstract class Tile implements Serializable {
 	public void receiveMessage(MessageType type){}
 	public void tick(int ms){}
 	public abstract void draw(float x, float y);
+	public abstract boolean isCollidable();
 	
 }

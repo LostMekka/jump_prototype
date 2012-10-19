@@ -13,58 +13,39 @@ import org.newdawn.slick.Image;
  */
 public final class PlayerEntity extends Entity {
 
-	public enum PlayerState{ idle, walk, jump, fall }
-	
-	private int currImageIndex = 0, msCounter = 0, maxMsCount, maxImageCount, jumpMsCounter = 0, maxJumpCounter = 1000;
-	private Image currImage, jumpImage, fallImage;
-	private Image[] walkImages, idleImages;
-	private PlayerState state;
-	private boolean looksToTheRight;
-	
 	public PlayerEntity(float x, float y) {
-		super(x, y);
-		looksToTheRight = true;
-		jumpImage = AssetLoader.getImage("player_jump.png");
-		fallImage = AssetLoader.getImage("player_fall.png");
-		idleImages = new Image[4];
-		idleImages[0] = AssetLoader.getImage("player_idle_01.png");
-		idleImages[1] = AssetLoader.getImage("player_idle_02.png");
-		idleImages[2] = AssetLoader.getImage("player_idle_03.png");
-		idleImages[3] = AssetLoader.getImage("player_idle_04.png");
-		walkImages = new Image[5];
-		walkImages[0] = AssetLoader.getImage("player_walk_01.png");
-		walkImages[1] = AssetLoader.getImage("player_walk_02.png");
-		walkImages[2] = AssetLoader.getImage("player_walk_03.png");
-		walkImages[3] = AssetLoader.getImage("player_walk_04.png");
-		walkImages[4] = AssetLoader.getImage("player_walk_05.png");
-		// TODO: init to idle
-		setState(PlayerState.idle);
+		super(false, x, y);
 	}
 
 	@Override
-	public float getVxOnKeyPressed(int ms, boolean run) {
-		float a = 0f;
-		if((state == PlayerState.fall) || (state == PlayerState.jump)){
-			a = 0.015f;
+	public float getVxOnKeyPressed(boolean run) {
+		float v;
+		if((state == EntityState.fall) || (state == EntityState.jump)){
+			v = 1f;
 		} else {
-			a = 0.3f;
+			v = 2f;
 		}
 		if(run){
-			a *= 1.5f;
+			v *= 1.5f;
 		}
-		return a * ms;
+		return v;
 	}
 
 	@Override
 	public float getAyOnUpPressed() {
 		switch(state){
-			case idle: return 6f;
-			case walk: return 6f;
-			case jump: return 2.5f;
+			case idle: return -3f;
+			case walk: return -3f;
+			case jump: return -Level.GRAVITY * 0.9f;
 			default: return 0f;
 		}
 	}
 
+	@Override
+	public int getmaxJumpTime() {
+		return 3000;
+	}
+	
 	@Override
 	public boolean isMovable() {
 		return true;
@@ -80,74 +61,55 @@ public final class PlayerEntity extends Entity {
 		return true;
 	}
 
-	public boolean looksToTheRight() {
-		return looksToTheRight;
-	}
-
-	public void setDirection(boolean looksToTheRight) {
-		this.looksToTheRight = looksToTheRight;
-	}
-
-	public PlayerState getState() {
-		return state;
-	}
-
-	public void setState(PlayerState state) {
-		this.state = state;
-		currImageIndex = 0;
-		msCounter = 0;
+	@Override
+	public Image[] getImages(EntityState state, boolean facesLeft) {
+		Image[] ans;
 		switch(state){
 			case idle:
-				maxMsCount = 450;
-				maxImageCount = 4;
-				currImage = idleImages[0];
+				ans = new Image[4];
+				ans[0] = AssetLoader.getImage("player_idle_01.png", facesLeft);
+				ans[1] = AssetLoader.getImage("player_idle_02.png", facesLeft);
+				ans[2] = AssetLoader.getImage("player_idle_03.png", facesLeft);
+				ans[3] = AssetLoader.getImage("player_idle_04.png", facesLeft);
 				break;
 			case jump:
-				maxMsCount = 100000;
-				maxImageCount = 1;
-				currImage = jumpImage;
+				ans = new Image[1];
+				ans[0] = AssetLoader.getImage("player_jump.png", facesLeft);
 				break;
 			case fall:
-				maxMsCount = 100000;
-				maxImageCount = 1;
-				currImage = fallImage;
+				ans = new Image[1];
+				ans[0] = AssetLoader.getImage("player_fall.png", facesLeft);
 				break;
 			case walk:
-				maxMsCount = 180;
-				maxImageCount = 5;
-				currImage = walkImages[0];
+				ans = new Image[5];
+				ans[0] = AssetLoader.getImage("player_walk_01.png", facesLeft);
+				ans[1] = AssetLoader.getImage("player_walk_02.png", facesLeft);
+				ans[2] = AssetLoader.getImage("player_walk_03.png", facesLeft);
+				ans[3] = AssetLoader.getImage("player_walk_04.png", facesLeft);
+				ans[4] = AssetLoader.getImage("player_walk_05.png", facesLeft);
+				break;
+			default:
+				ans = new Image[1];
+				ans[0] = AssetLoader.getImage("error.png", false);
 				break;
 		}
+		return ans;
 	}
 
 	@Override
-	public void tick(int ms) {
-		msCounter += ms;
-		if(msCounter >= maxMsCount){
-			int add = msCounter / maxMsCount;
-			msCounter %= maxMsCount;
-			currImageIndex = (currImageIndex + add) % maxImageCount;
-			switch(state){
-				case idle:
-					currImage = idleImages[currImageIndex];
-					break;
-				case walk:
-					currImage = walkImages[currImageIndex];
-					break;
-			}
-		}
-		if(state == PlayerState.jump){
-			jumpMsCounter += ms;
-			if(jumpMsCounter >= maxJumpCounter){
-				jumpMsCounter = 0;
-				state = PlayerState.fall;
-			}
+	public int getImageDuration(EntityState state) {
+		switch(state){
+			case idle: return 450;
+			case walk: return 180;
+			default: return 10000;
 		}
 	}
 
 	@Override
-	public void draw(float x, float y) {
-		currImage.draw(x, y);
+	public void tickInternal(Level level, int ms, boolean leftPressed, boolean rightPressed, boolean upPressed, boolean runPressed) {
 	}
-	
+
+	@Override
+	public void drawInternal(float x, float y) {}
+
 }

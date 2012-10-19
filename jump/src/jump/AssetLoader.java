@@ -4,11 +4,7 @@
  */
 package jump;
 
-import com.sun.org.apache.bcel.internal.generic.AALOAD;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.newdawn.slick.BigImage;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.Sound;
@@ -25,25 +21,37 @@ public class AssetLoader {
 	private static HashMap<String, Sound> sounds = new HashMap<>();
 	private static HashMap<String, Image> images = new HashMap<>();
 	
-	public static Image getImage(String name){
-		if(images.containsKey(name)){
-			return images.get(name);
+	public static Image getImage(String name, boolean flipped){
+		if(flipped){
+			String name2 = "__FLIPPED__" + name;
+			if(images.containsKey(name2)){
+				return images.get(name2);
+			} else {
+				Image i = getImage(name, false);
+				i = i.getFlippedCopy(true, false);
+				images.put(name2, i);
+				return i;
+			}
 		} else {
-			Image i = null;
-			try {
-				i = new Image(name);
-			} catch (Exception ex) {
-				if(errorImage == null){
-					try {
-						errorImage = new Image("error.png");
-					} catch (SlickException ex1) {}
+			if(images.containsKey(name)){
+				return images.get(name);
+			} else {
+				Image i;
+				try {
+					i = new Image(name);
+				} catch (Exception ex) {
+					if(errorImage == null){
+						try {
+							errorImage = new Image("error.png");
+						} catch (SlickException ex1) {}
+					}
+					return errorImage;
 				}
-				return errorImage;
+				if(i != null){
+					images.put(name, i);
+				}
+				return i;
 			}
-			if(i != null){
-				images.put(name, i);
-			}
-			return i;
 		}
 	}
 	

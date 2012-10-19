@@ -5,6 +5,7 @@
 package jump.level;
 
 import java.io.Serializable;
+import org.newdawn.slick.Image;
 
 /**
  *
@@ -12,91 +13,117 @@ import java.io.Serializable;
  */
 public abstract class Entity implements Serializable {
 	
-	protected float x, y, vx, vy, ax, ay;
+	// ATTENTION! manipulate state ONLY WITH setState(state) !!!!
+	
+	public enum EntityState{ idle, walk, jump, fall }
+	
+	public float x, y, vx, vy, ax, ay;
+	private Image[] currImages;
+	private int currImageIndex = 0, msCounter = 0, maxMsCount, jumpMsCounter = 0;
+	public EntityState state;
+	private boolean looksToTheLeft;
 
-	public Entity(float x, float y, float vx, float vy, float ax, float ay) {
+	public Entity(boolean looksToTheLeft, float x, float y, float vx, float vy, float ax, float ay) {
 		this.x = x;
 		this.y = y;
 		this.vx = vx;
 		this.vy = vy;
 		this.ax = ax;
 		this.ay = ay;
+		this.looksToTheLeft = looksToTheLeft;
+		setState(EntityState.idle);
 	}
 
-	public Entity(float x, float y, float vx, float vy) {
-		this(x, y, vx, vy, 0f, 0f);
+	public Entity(boolean looksToTheLeft, float x, float y, float vx, float vy) {
+		this(looksToTheLeft, x, y, vx, vy, 0f, 0f);
 	}
 
-	public Entity(float x, float y) {
-		this(x, y, 0f, 0f, 0f, 0f);
+	public Entity(boolean looksToTheLeft, float x, float y) {
+		this(looksToTheLeft, x, y, 0f, 0f, 0f, 0f);
+	}
+	
+	public boolean looksToTheLeft() {
+		return looksToTheLeft;
 	}
 
-	public float getVx() {
-		return vx;
-	}
-
-	public float getVy() {
-		return vy;
-	}
-
-	public float getX() {
-		return x;
-	}
-
-	public float getY() {
-		return y;
-	}
-
-	public float getAx() {
-		return ax;
-	}
-
-	public void setAx(float ax) {
-		this.ax = ax;
-	}
-
-	public float getAy() {
-		return ay;
-	}
-
-	public void setAy(float ay) {
-		this.ay = ay;
-	}
-
-	public boolean movementTick(int ms){
-		if(isMovable()){
-			vx += ax * ms;		
-			if(usesGravity()){
-				vy += (ay - Level.GRAVITY) * ms;
-			} else {
-				vy += ay * ms;
-			}
-			x += vx * ms;
-			y -= vy * ms;
-			return true;
+	public void setDirectionToLeft(boolean looksToTheLeft) {
+		if(this.looksToTheLeft != looksToTheLeft){
+			this.looksToTheLeft = looksToTheLeft;
+			setState(state);
 		} else {
-			return false;
+			this.looksToTheLeft = looksToTheLeft;
 		}
 	}
-	
-	public void leftPressed(int ms, boolean run){
-		vx = -getVxOnKeyPressed(ms, run);
+
+	public EntityState getState() {
+		return state;
+	}
+
+	public void setState(EntityState state){
+		this.state = state;
+		currImages = getImages(state, looksToTheLeft);
+		maxMsCount = getImageDuration(state);
+	}
+
+	public void tick(Level level, int ms, boolean leftPressed, boolean rightPressed, boolean upPressed, boolean runPressed){
+		// counters
+		msCounter += ms;
+		if(msCounter >= maxMsCount){
+			int add = msCounter / maxMsCount;
+			msCounter %= maxMsCount;
+			currImageIndex = (currImageIndex + add) % currImages.length;
+		}
+		// direction
+		if(vx > 0f) setDirectionToLeft(false);
+		if(vx < 0f) setDirectionToLeft(true);
+		// states
+		if(state == EntityState.jump){
+			jumpMsCounter += ms;
+			if((jumpMsCounter >= getmaxJumpTime()) || (vy < 0f)){
+				jumpMsCounter = 0;
+				setState(EntityState.fall);
+			}
+		}
+		if((vy > 0f) && (state != EntityState.jump)){
+			jumpMsCounter = 0;
+			setState(EntityState.jump);
+		}
+		if((vy < 0f) && (state != EntityState.fall)) setState(EntityState.fall);
+		if((vx != 0f) && (state == EntityState.idle)) setState(EntityState.walk);
+		if((vx == 0f) && (state == EntityState.walk)) setState(EntityState.idle);		
+		// movement
+		if(isMovable()){
+			if(leftPressed) vx = -getVxOnKeyPressed(runPressed);
+			if(leftPressed) vx = getVxOnKeyPressed(runPressed);
+			if(leftPressed) ay = getAyOnUpPressed();
+			vx += ax * (float)ms / 1000f;		
+			if(usesGravity()){
+				vy += (ay - Level.GRAVITY) * (float)ms / 1000f;
+			} else {
+				vy += ay * (float)ms / 1000f;
+			}
+			x += vx * (float)ms / 1000f;
+			y -= vy * (float)ms / 1000f;
+			level.correctEntityPosition(this);
+		}
+		// internal tick
+		tickInternal(level, ms, leftPressed, rightPressed, upPressed, runPressed);
 	}
 	
-	public void rigthPressed(int ms, boolean run){
-		vx = getVxOnKeyPressed(ms, run);
+	public void draw(float x, float y){
+		currImages[currImageIndex].draw(x, y);
+		drawInternal(x, y);
 	}
 	
-	public void upPressed(){
-		ay = getAyOnUpPressed();
-	}
-	
-	public abstract void tick(int ms);
-	public abstract void draw(float x, float y);
+	protected abstract void tickInternal(Level level, int ms, boolean leftPressed, boolean rightPressed, boolean upPressed, boolean runPressed);
+	public abstract void drawInternal(float x, float y);
 	public abstract boolean isMovable();
 	public abstract boolean usesGravity();
 	public abstract boolean collidesOnForeground();
-	public abstract float getVxOnKeyPressed(int ms, boolean run);
+	public abstract float getVxOnKeyPressed(boolean run);
 	public abstract float getAyOnUpPressed();
+	public abstract int getmaxJumpTime();
+	public abstract Image[] getImages(EntityState state, boolean facesLeft);
+	public abstract int getImageDuration(EntityState state);
 	
 }

@@ -32,5 +32,10 @@ public class StaticTile extends Tile{
 	public void draw(float x, float y) {
 		image.draw(x, y);
 	}
+
+	@Override
+	public boolean isCollidable() {
+		return !isBackground;
+	}
 	
 }

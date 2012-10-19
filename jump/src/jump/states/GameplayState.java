@@ -35,8 +35,8 @@ public final class GameplayState extends BasicGameState {
 	public void setLevel(Level level) {
 		this.level = level;
 		player = level.getPlayer();
-		camX = player.getX();
-		camY = player.getY();
+		camX = player.x;
+		camY = player.y;
 		tileSize = 30f;
 	}
 	
@@ -60,35 +60,24 @@ public final class GameplayState extends BasicGameState {
 			}
 		}
 		for(Entity e : level){
-			e.draw((e.getX() - camX) * Level.TILE_SIZE + gc.getWidth() / 2f, 
-					(e.getY() - camY) * Level.TILE_SIZE + gc.getHeight() / 2f);
+			e.draw((e.x - camX) * Level.TILE_SIZE + gc.getWidth() / 2f, 
+					(e.y - camY) * Level.TILE_SIZE + gc.getHeight() / 2f);
 		}
 	}
 
 	@Override
 	public void update(GameContainer gc, StateBasedGame sbg, int i) throws SlickException {
-		// handle input
 		Input in = gc.getInput();
-		if(in.isKeyDown(Input.KEY_SPACE)){
-			player.upPressed();
-		}
-		boolean run = false;
-		if(in.isKeyDown(Input.KEY_LCONTROL)){
-			run = true;
-		}
-		if(in.isKeyDown(Input.KEY_LEFT)){
-			player.leftPressed(i, run);
-		}
-		if(in.isKeyDown(Input.KEY_RIGHT)){
-			player.rigthPressed(i, run);
-		}
-		// do ticks
 		for(Entity e : level){
-			e.movementTick(i);
-		}
-		level.correctEntityPositions();
-		for(Entity e : level){
-			e.tick(i);
+			if(e == player){
+				e.tick(level, i,
+						in.isKeyDown(Input.KEY_LEFT),
+						in.isKeyDown(Input.KEY_RIGHT),
+						in.isKeyDown(Input.KEY_SPACE),
+						in.isKeyDown(Input.KEY_LCONTROL));
+			} else {
+				e.tick(level, i, false, false, false, false);
+			}
 		}
 	}
 	
