@@ -24,9 +24,10 @@ public final class GameplayState extends BasicGameState {
 	private float camX, camY, tileSize;
 	private PlayerEntity player;
 	private Entity focusedEntity;
+	private GameContainer gc;
 
 	public GameplayState(Level level) {
-		setLevel(level);
+		this.level = level;
 	}
 
 	public Level getLevel() {
@@ -48,7 +49,8 @@ public final class GameplayState extends BasicGameState {
 
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
-		
+		this.gc = gc;
+		setLevel(level);
 	}
 
 	@Override
@@ -66,7 +68,7 @@ public final class GameplayState extends BasicGameState {
 		}
 	}
 	
-	private void updateCamera(GameContainer gc){
+	private void updateCamera(){
 		float rx = (float)gc.getWidth() * 0.3f * 0.5f;
 		float ry = (float)gc.getHeight() * 0.3f * 0.5f;
 		float fx = (focusedEntity.x + 0.5f) * Level.TILE_SIZE;
@@ -85,7 +87,22 @@ public final class GameplayState extends BasicGameState {
 	}
 	
 	private void applyLevelBorderToCamera(){
-		
+		float sx = gc.getWidth();
+		float sy = gc.getHeight();
+		float lx = level.getWidth() * Level.TILE_SIZE;
+		float ly = level.getHeight() * Level.TILE_SIZE;
+		if(lx < sx){
+			camX = lx / 2f;
+		} else {
+			if(camX > lx - sx / 2f) camX = lx - sx / 2f;
+			if(camX < sx / 2f) camX = sx / 2f;
+		}
+		if(ly < sy){
+			camY = ly / 2f;
+		} else {
+			if(camY > ly - sy / 2f) camY = ly - sy / 2f;
+			if(camY < sy / 2f) camY = sy / 2f;
+		}
 	}
 
 	@Override
@@ -102,7 +119,7 @@ public final class GameplayState extends BasicGameState {
 				e.tick(level, i, false, false, false, false);
 			}
 		}
-		updateCamera(gc);
+		updateCamera();
 	}
 	
 }
