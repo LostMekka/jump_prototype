@@ -5,6 +5,7 @@
 package jump.level;
 
 import java.io.Serializable;
+import jump.AssetLoader;
 import org.newdawn.slick.Image;
 
 /**
@@ -96,8 +97,14 @@ public abstract class Entity implements Serializable {
 			// do collisions
 			level.correctEntityPosition(this);
 			// vertical handling
-			if((vy == 0f) && (state == EntityState.fall)) setState(EntityState.idle);
-			if((vy > 0f) && (state != EntityState.jump)) setState(EntityState.jump);
+			if((vy == 0f) && (state == EntityState.fall)){
+				setState(EntityState.idle);
+				AssetLoader.getSound("land.wav").play();
+			}
+			if((vy > 0f) && ((state == EntityState.idle) || (state == EntityState.walk))){
+				setState(EntityState.jump);
+				AssetLoader.getSound("jump.wav").play();
+			}
 			if(state == EntityState.jump){
 				jumpMsCounter += ms;
 				if((jumpMsCounter >= getmaxJumpTime()) || (vy < 0f) || !upPressed){
