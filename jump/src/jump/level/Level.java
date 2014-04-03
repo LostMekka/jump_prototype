@@ -19,7 +19,7 @@ import jump.AssetLoader;
 public class Level implements Serializable, Iterable<Entity> {
 	
 	public static final float GRAVITY = 30f;
-	public static final int TILE_SIZE = 30;
+	public static final int TILE_SIZE = 32;
 	
 	private Tile[] tiles;
 	private LinkedList<Entity> entities;
