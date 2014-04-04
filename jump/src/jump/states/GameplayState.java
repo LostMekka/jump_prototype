@@ -4,6 +4,8 @@
  */
 package jump.states;
 
+import jump.FlippableSpriteSheet;
+import jump.MyGame;
 import jump.level.Entity;
 import jump.level.Level;
 import jump.level.PlayerEntity;
@@ -21,13 +23,12 @@ import org.newdawn.slick.state.StateBasedGame;
 public final class GameplayState extends BasicGameState {
 
 	private Level level;
-	private float camX, camY, tileSize;
+	private float camX, camY;
 	private PlayerEntity player;
 	private Entity focusedEntity;
 	private GameContainer gc;
 
-	public GameplayState(Level level) {
-		this.level = level;
+	public GameplayState() {
 	}
 
 	public Level getLevel() {
@@ -39,7 +40,6 @@ public final class GameplayState extends BasicGameState {
 		player = level.getPlayer();
 		focusedEntity = player;
 		focusCameraOnTile(Math.round(player.x), Math.round(player.y));
-		tileSize = 30f;
 	}
 	
 	@Override
@@ -50,7 +50,10 @@ public final class GameplayState extends BasicGameState {
 	@Override
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		this.gc = gc;
-		setLevel(level);
+		// load textures
+		PlayerEntity.ffs = new FlippableSpriteSheet("player.png", 32, 32, true, false);
+		// init state stuff
+		setLevel(new Level("level001", true));
 	}
 
 	@Override
@@ -58,21 +61,21 @@ public final class GameplayState extends BasicGameState {
 		for(int y=0; y<level.getHeight(); y++){
 			for(int x=0; x<level.getWidth(); x++){
 				level.getTile(x, y).draw(
-						Math.round((x * Level.TILE_SIZE - camX + gc.getWidth() / 2f)), 
-						Math.round((y * Level.TILE_SIZE - camY + gc.getHeight() / 2f)));
+						Math.round((x - camX) * MyGame.TILE_SIZE * MyGame.PIXEL_SIZE + gc.getWidth() / 2f), 
+						Math.round((y - camY) * MyGame.TILE_SIZE * MyGame.PIXEL_SIZE + gc.getHeight() / 2f));
 			}
 		}
 		for(Entity e : level){
-			e.draw(Math.round((e.x * Level.TILE_SIZE - camX + gc.getWidth() / 2f)), 
-					Math.round((e.y * Level.TILE_SIZE - camY + gc.getHeight() / 2f)));
+			e.draw(Math.round((e.x - camX) * MyGame.TILE_SIZE * MyGame.PIXEL_SIZE + gc.getWidth() / 2f), 
+					Math.round((e.y - camY) * MyGame.TILE_SIZE * MyGame.PIXEL_SIZE + gc.getHeight() / 2f));
 		}
 	}
 	
 	private void updateCamera(){
-		float rx = (float)gc.getWidth() * 0.3f * 0.5f;
-		float ry = (float)gc.getHeight() * 0.3f * 0.5f;
-		float fx = (focusedEntity.x + 0.5f) * Level.TILE_SIZE;
-		float fy = (focusedEntity.y + 0.5f) * Level.TILE_SIZE;
+		float rx = (float)gc.getWidth() / MyGame.TILE_SIZE / MyGame.PIXEL_SIZE / 2f * 0.3f;
+		float ry = (float)gc.getHeight() / MyGame.TILE_SIZE / MyGame.PIXEL_SIZE / 2f * 0.3f;
+		float fx = focusedEntity.x + 0.5f;
+		float fy = focusedEntity.y + 0.5f;
 		if(fx < camX - rx) camX = fx + rx;
 		if(fx > camX + rx) camX = fx - rx;
 		if(fy < camY - ry) camY = fy + ry;
@@ -81,16 +84,16 @@ public final class GameplayState extends BasicGameState {
 	}
 	
 	private void focusCameraOnTile(int x, int y){
-		camX = ((float)x + 0.5f) * (float)Level.TILE_SIZE;
-		camY = ((float)y + 0.5f) * (float)Level.TILE_SIZE;
+		camX = (float)x + 0.5f;
+		camY = (float)y + 0.5f;
 		applyLevelBorderToCamera();
 	}
 	
 	private void applyLevelBorderToCamera(){
-		float sx = gc.getWidth();
-		float sy = gc.getHeight();
-		float lx = level.getWidth() * Level.TILE_SIZE;
-		float ly = level.getHeight() * Level.TILE_SIZE;
+		float sx = (float)gc.getWidth() / (float)MyGame.TILE_SIZE / (float)MyGame.PIXEL_SIZE;
+		float sy = (float)gc.getHeight() / (float)MyGame.TILE_SIZE / (float)MyGame.PIXEL_SIZE;
+		float lx = level.getWidth();
+		float ly = level.getHeight();
 		if(lx < sx){
 			camX = lx / 2f;
 		} else {
@@ -108,6 +111,7 @@ public final class GameplayState extends BasicGameState {
 	@Override
 	public void update(GameContainer gc, StateBasedGame sbg, int i) throws SlickException {
 		Input in = gc.getInput();
+		if(in.isKeyDown(Input.KEY_ESCAPE)) gc.exit();
 		for(Entity e : level){
 			if(e == player){
 				e.tick(level, i,

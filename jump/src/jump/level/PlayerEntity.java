@@ -5,7 +5,10 @@
 package jump.level;
 
 import jump.AssetLoader;
+import jump.FlippableSpriteSheet;
+import org.newdawn.slick.Animation;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.SpriteSheet;
 
 /**
  *
@@ -13,8 +16,27 @@ import org.newdawn.slick.Image;
  */
 public final class PlayerEntity extends Entity {
 
+	private Animation idleAniL = null, idleAniR = null, 
+			walkAniL = null, walkAniR = null, 
+			jumpAniL = null, jumpAniR = null, 
+			fallAniL = null, fallAniR = null;
+	
 	public PlayerEntity(float x, float y) {
 		super(false, x, y);
+		idleAniL = ffs.createAnimation(new int[]{0,1,2,3}, new int[]{0,0,0,0}, true, false, 450);
+		idleAniR = ffs.createAnimation(new int[]{0,1,2,3}, new int[]{0,0,0,0}, false, false, 450);
+		walkAniL = ffs.createAnimation(new int[]{0,1,2,3,4}, new int[]{1,1,1,1,1}, true, false, 180);
+		walkAniR = ffs.createAnimation(new int[]{0,1,2,3,4}, new int[]{1,1,1,1,1}, false, false, 180);
+		jumpAniL = ffs.createAnimation(new int[]{7}, new int[]{0}, true, false, 100000);
+		jumpAniR = ffs.createAnimation(new int[]{7}, new int[]{0}, false, false, 100000);
+		fallAniL = ffs.createAnimation(new int[]{7}, new int[]{1}, true, false, 100000);
+		fallAniR = ffs.createAnimation(new int[]{7}, new int[]{1}, false, false, 100000);
+		setState(EntityState.idle);
+	}
+
+	@Override
+	public FlippableSpriteSheet getFlippableSpriteSheet() {
+		return ffs;
 	}
 
 	@Override
@@ -62,47 +84,23 @@ public final class PlayerEntity extends Entity {
 	}
 
 	@Override
-	public Image[] getImages(EntityState state, boolean facesLeft) {
-		Image[] ans;
-		switch(state){
-			case idle:
-				ans = new Image[4];
-				ans[0] = AssetLoader.getImage("player_idle_01.png", facesLeft);
-				ans[1] = AssetLoader.getImage("player_idle_02.png", facesLeft);
-				ans[2] = AssetLoader.getImage("player_idle_03.png", facesLeft);
-				ans[3] = AssetLoader.getImage("player_idle_04.png", facesLeft);
-				break;
-			case jump:
-				ans = new Image[1];
-				ans[0] = AssetLoader.getImage("player_jump.png", facesLeft);
-				break;
-			case fall:
-				ans = new Image[1];
-				ans[0] = AssetLoader.getImage("player_fall.png", facesLeft);
-				break;
-			case walk:
-				ans = new Image[5];
-				ans[0] = AssetLoader.getImage("player_walk_01.png", facesLeft);
-				ans[1] = AssetLoader.getImage("player_walk_02.png", facesLeft);
-				ans[2] = AssetLoader.getImage("player_walk_03.png", facesLeft);
-				ans[3] = AssetLoader.getImage("player_walk_04.png", facesLeft);
-				ans[4] = AssetLoader.getImage("player_walk_05.png", facesLeft);
-				break;
-			default:
-				ans = new Image[1];
-				ans[0] = AssetLoader.getImage("error.png", false);
-				break;
+	public Animation getAnimation(EntityState state, boolean facesLeft) {
+		if(facesLeft){
+			switch(state){
+				case idle: return idleAniL;
+				case jump: return jumpAniL;
+				case fall: return fallAniL;
+				case walk: return walkAniL;
+			}
+		} else {
+			switch(state){
+				case idle: return idleAniR;
+				case jump: return jumpAniR;
+				case fall: return fallAniR;
+				case walk: return walkAniR;
+			}
 		}
-		return ans;
-	}
-
-	@Override
-	public int getImageDuration(EntityState state) {
-		switch(state){
-			case idle: return 450;
-			case walk: return 180;
-			default: return 10000;
-		}
+		throw new RuntimeException("No animation found for entity state!");
 	}
 
 	@Override

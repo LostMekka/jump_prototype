@@ -8,9 +8,12 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Random;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import jump.AssetLoader;
+import jump.MyGame;
+import org.newdawn.slick.SpriteSheet;
 
 /**
  *
@@ -19,7 +22,7 @@ import jump.AssetLoader;
 public class Level implements Serializable, Iterable<Entity> {
 	
 	public static final float GRAVITY = 30f;
-	public static final int TILE_SIZE = 32;
+	private static final Random random = new Random();
 	
 	private Tile[] tiles;
 	private LinkedList<Entity> entities;
@@ -35,8 +38,11 @@ public class Level implements Serializable, Iterable<Entity> {
 				throw new RuntimeException("cannot find image \"" + name + ".png\"!", ex);
 			}
 			Tile error1 = new StaticTile(AssetLoader.getImage("error.png", false), true);
-			Tile back1 = new StaticTile(AssetLoader.getImage("back254.png", false), true);
-			Tile front1 = new StaticTile(AssetLoader.getImage("front254.png", false), false);
+			SpriteSheet tileSprites = AssetLoader.getSpriteSheet("tiles.png", MyGame.TILE_SIZE, MyGame.TILE_SIZE);
+			Tile back1 = new StaticTile(tileSprites.getSprite(1, 1), true);
+			Tile front1 = new StaticTile(tileSprites.getSprite(1, 0), false);
+			Tile back2 = new StaticTile(tileSprites.getSprite(2, 1), true);
+			Tile front2 = new StaticTile(tileSprites.getSprite(2, 0), false);
 			width = image.getWidth();
 			height = image.getHeight();
 			tiles = new Tile[width * height];
@@ -49,8 +55,13 @@ public class Level implements Serializable, Iterable<Entity> {
 					int bg = (col & 0x0000FF00) >> 8;
 					int en = col & 0x000000FF;
 					tiles[i] = error1;
-					if(fg == 255) tiles[i] = front1;
-					if(bg == 255) tiles[i] = back1;
+					if(random.nextFloat() < 0.05f){
+						if(fg == 255) tiles[i] = front2;
+						if(bg == 255) tiles[i] = back2;
+					} else {
+						if(fg == 255) tiles[i] = front1;
+						if(bg == 255) tiles[i] = back1;
+					}
 					if(en == 255){
 						playerEntity = new PlayerEntity(x, y);
 						entities.add(playerEntity);

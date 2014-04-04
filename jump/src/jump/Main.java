@@ -21,7 +21,7 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			MyGame game = new MyGame("game");
-			AppGameContainer c = new AppGameContainer(game, 800, 600, false);
+			AppGameContainer c = new AppGameContainer(game, 1024, 768, false);
 			c.start();
 		} catch (SlickException ex) {
 			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);

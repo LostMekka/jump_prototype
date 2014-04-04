@@ -16,13 +16,16 @@ import org.newdawn.slick.state.StateBasedGame;
  */
 public class MyGame extends StateBasedGame {
 
+	public static final int PIXEL_SIZE = 4;
+	public static final int TILE_SIZE = 32;
+	
 	public MyGame(String name) {
 		super(name);
 	}
 
 	@Override
 	public void initStatesList(GameContainer gc) throws SlickException {
-		addState(new GameplayState(new Level("level001", true)));
+		addState(new GameplayState());
 	}
 	
 }

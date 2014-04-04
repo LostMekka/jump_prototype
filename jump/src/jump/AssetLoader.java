@@ -8,6 +8,7 @@ import java.util.HashMap;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.Sound;
+import org.newdawn.slick.SpriteSheet;
 
 /**
  *
@@ -18,8 +19,10 @@ public class AssetLoader {
 	private AssetLoader(){}
 
 	private static Image errorImage = null;
+	private static SpriteSheet errorSpriteSheet = null;
 	private static HashMap<String, Sound> sounds = new HashMap<>();
 	private static HashMap<String, Image> images = new HashMap<>();
+	private static HashMap<String, SpriteSheet> spriteSheets = new HashMap<>();
 	
 	public static Image getImage(String name, boolean flipped){
 		if(flipped){
@@ -39,6 +42,7 @@ public class AssetLoader {
 				Image i;
 				try {
 					i = new Image(name);
+					i.setFilter(Image.FILTER_NEAREST);
 				} catch (Exception ex) {
 					if(errorImage == null){
 						try {
@@ -52,6 +56,28 @@ public class AssetLoader {
 				}
 				return i;
 			}
+		}
+	}
+	
+	public static SpriteSheet getSpriteSheet(String name, int tileWidth, int tileHeight){
+		if(spriteSheets.containsKey(name)){
+			return spriteSheets.get(name);
+		} else {
+			SpriteSheet s;
+			try {
+				s = new SpriteSheet(name, tileWidth, tileHeight);
+			} catch (SlickException ex) {
+				if(errorSpriteSheet == null){
+					try {
+						errorSpriteSheet = new SpriteSheet("error.png", 32, 32);
+					} catch (SlickException ex1) {}
+				}
+				return errorSpriteSheet;
+			}
+			if(s != null){
+				spriteSheets.put(name, s);
+			}
+			return s;
 		}
 	}
 	

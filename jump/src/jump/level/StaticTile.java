@@ -4,6 +4,7 @@
  */
 package jump.level;
 
+import jump.MyGame;
 import org.newdawn.slick.Image;
 
 /**
@@ -30,7 +31,7 @@ public class StaticTile extends Tile{
 	
 	@Override
 	public void draw(float x, float y) {
-		image.draw(x, y);
+		image.draw(x, y, MyGame.PIXEL_SIZE);
 	}
 
 	@Override

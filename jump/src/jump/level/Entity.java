@@ -6,6 +6,9 @@ package jump.level;
 
 import java.io.Serializable;
 import jump.AssetLoader;
+import jump.FlippableSpriteSheet;
+import jump.MyGame;
+import org.newdawn.slick.Animation;
 import org.newdawn.slick.Image;
 
 /**
@@ -16,11 +19,13 @@ public abstract class Entity implements Serializable {
 	
 	// ATTENTION! manipulate state ONLY WITH setState(state) !!!!
 	
+	public static FlippableSpriteSheet ffs = null;
+
 	public enum EntityState{ idle, walk, jump, fall }
 	
 	public float x, y, vx, vy, ax, ay;
-	private Image[] currImages;
-	private int currImageIndex = 0, msCounter = 0, maxMsCount, jumpMsCounter = 0;
+	private Animation currAnimation;
+	private int jumpMsCounter = 0;
 	public EntityState state;
 	private boolean looksToTheLeft;
 
@@ -32,9 +37,8 @@ public abstract class Entity implements Serializable {
 		this.ax = ax;
 		this.ay = ay;
 		this.looksToTheLeft = looksToTheLeft;
-		setState(EntityState.idle);
 	}
-
+	
 	public Entity(boolean looksToTheLeft, float x, float y, float vx, float vy) {
 		this(looksToTheLeft, x, y, vx, vy, 0f, 0f);
 	}
@@ -60,27 +64,22 @@ public abstract class Entity implements Serializable {
 		return state;
 	}
 
-	public void setState(EntityState state){
-		if(this.state != state) currImageIndex = 0;
+	public final void setState(EntityState state){
+		if(this.state != state){
+			currAnimation = getAnimation(state, looksToTheLeft);
+			currAnimation.restart();
+		}
 		this.state = state;
-		currImages = getImages(state, looksToTheLeft);
-		maxMsCount = getImageDuration(state);
 	}
 
 	public void tick(Level level, int ms, boolean leftPressed, boolean rightPressed, boolean upPressed, boolean runPressed){
-		// counters
-		msCounter += ms;
-		if(msCounter >= maxMsCount){
-			int add = msCounter / maxMsCount;
-			msCounter %= maxMsCount;
-			currImageIndex = (currImageIndex + add) % currImages.length;
-		}
+		currAnimation.update(ms);
 		// movement
 		if(isMovable()){
 			// inputs
 			if(leftPressed) vx = -getVxOnKeyPressed(runPressed);
 			if(rightPressed) vx = getVxOnKeyPressed(runPressed);
-			if(!leftPressed && !rightPressed) vx = 0f;
+			if(leftPressed == rightPressed) vx = 0;
 			if(upPressed && ((state == EntityState.walk) || (state == EntityState.idle))){
 				ay = getAyOnUpPressed();
 				vy = getInitialJunpVel();
@@ -126,9 +125,11 @@ public abstract class Entity implements Serializable {
 	}
 	
 	public void draw(float x, float y){
-		currImages[currImageIndex].draw(x, y);
+		currAnimation.getCurrentFrame().draw(x, y, MyGame.PIXEL_SIZE);
 		drawInternal(x, y);
 	}
+	
+	public FlippableSpriteSheet getFlippableSpriteSheet(){ return null; } 
 	
 	protected abstract void tickInternal(Level level, int ms, boolean leftPressed, boolean rightPressed, boolean upPressed, boolean runPressed);
 	public abstract void drawInternal(float x, float y);
@@ -139,7 +140,6 @@ public abstract class Entity implements Serializable {
 	public abstract float getAyOnUpPressed();
 	public abstract float getInitialJunpVel();
 	public abstract int getmaxJumpTime();
-	public abstract Image[] getImages(EntityState state, boolean facesLeft);
-	public abstract int getImageDuration(EntityState state);
+	public abstract Animation getAnimation(EntityState state, boolean facesLeft);
 	
 }
