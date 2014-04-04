@@ -134,7 +134,9 @@ public class FlippableSpriteSheet {
 			indices[2 * i] = ssx;
 			indices[2 * i + 1] = ssy;
 		}
-		return new Animation(sheet, indices, durations);
+		Animation ani = new Animation(sheet, indices, durations);
+		ani.setAutoUpdate(false);
+		return ani;
 	}
 
 	public void renderInUse(int x, int y, float scale) {

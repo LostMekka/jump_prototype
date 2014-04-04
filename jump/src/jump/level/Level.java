@@ -21,13 +21,11 @@ import org.newdawn.slick.SpriteSheet;
  */
 public class Level implements Serializable, Iterable<Entity> {
 	
-	public static final float GRAVITY = 30f;
-	private static final Random random = new Random();
-	
 	private Tile[] tiles;
 	private LinkedList<Entity> entities;
 	private int width, height;
 	private PlayerEntity playerEntity;
+	private SpriteSheet tileSprites = null;
 	
 	public Level(String name, boolean isImage){
 		if(isImage){
@@ -37,12 +35,12 @@ public class Level implements Serializable, Iterable<Entity> {
 			} catch (IOException ex) {
 				throw new RuntimeException("cannot find image \"" + name + ".png\"!", ex);
 			}
-			Tile error1 = new StaticTile(AssetLoader.getImage("error.png", false), true);
-			SpriteSheet tileSprites = AssetLoader.getSpriteSheet("tiles.png", MyGame.TILE_SIZE, MyGame.TILE_SIZE);
-			Tile back1 = new StaticTile(tileSprites.getSprite(1, 1), true);
-			Tile front1 = new StaticTile(tileSprites.getSprite(1, 0), false);
-			Tile back2 = new StaticTile(tileSprites.getSprite(2, 1), true);
-			Tile front2 = new StaticTile(tileSprites.getSprite(2, 0), false);
+			Tile error1 = new StaticTile(AssetLoader.getSpriteSheet("error.png", 32, 32), 0, 0, true);
+			tileSprites = AssetLoader.getSpriteSheet("tiles.png", MyGame.TILE_SIZE, MyGame.TILE_SIZE);
+			Tile back1 = new StaticTile(tileSprites, 1, 1, true);
+			Tile front1 = new StaticTile(tileSprites, 1, 0, false);
+			Tile back2 = new StaticTile(tileSprites ,2, 1, true);
+			Tile front2 = new StaticTile(tileSprites, 2, 0, false);
 			width = image.getWidth();
 			height = image.getHeight();
 			tiles = new Tile[width * height];
@@ -55,7 +53,7 @@ public class Level implements Serializable, Iterable<Entity> {
 					int bg = (col & 0x0000FF00) >> 8;
 					int en = col & 0x000000FF;
 					tiles[i] = error1;
-					if(random.nextFloat() < 0.05f){
+					if(MyGame.random.nextFloat() < 0.05f){
 						if(fg == 255) tiles[i] = front2;
 						if(bg == 255) tiles[i] = back2;
 					} else {
@@ -65,6 +63,7 @@ public class Level implements Serializable, Iterable<Entity> {
 					if(en == 255){
 						playerEntity = new PlayerEntity(x, y);
 						entities.add(playerEntity);
+						entities.add(new ZerglingEntity(true, x, y));
 					}
 				}
 			}
@@ -96,6 +95,10 @@ public class Level implements Serializable, Iterable<Entity> {
 		} catch (Exception ex) {
 			Logger.getLogger(Level.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
 		}
+	}
+	
+	public SpriteSheet getSpriteSheet(){
+		return tileSprites;
 	}
 
 	public int getWidth() {

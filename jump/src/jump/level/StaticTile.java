@@ -6,6 +6,7 @@ package jump.level;
 
 import jump.MyGame;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.SpriteSheet;
 
 /**
  *
@@ -15,14 +16,14 @@ public class StaticTile extends Tile{
 
 	private Image image;
 	private boolean isBackground;
+	private SpriteSheet sheet;
+	private int imageX, imageY;
 
-	public StaticTile(Image image, boolean isBackground) {
-		this.image = image;
+	public StaticTile(SpriteSheet sheet, int imageX, int imageY, boolean isBackground) {
 		this.isBackground = isBackground;
-	}
-
-	public Image getImage() {
-		return image;
+		this.sheet = sheet;
+		this.imageX = imageX;
+		this.imageY = imageY;
 	}
 
 	public boolean isIsBackground() {
@@ -31,7 +32,8 @@ public class StaticTile extends Tile{
 	
 	@Override
 	public void draw(float x, float y) {
-		image.draw(x, y, MyGame.PIXEL_SIZE);
+		sheet.renderInUse(Math.round(x), Math.round(y), imageX, imageY);
+		//image.draw(x, y, MyGame.PIXEL_SIZE);
 	}
 
 	@Override

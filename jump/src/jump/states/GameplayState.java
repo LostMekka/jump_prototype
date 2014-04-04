@@ -57,18 +57,25 @@ public final class GameplayState extends BasicGameState {
 	}
 
 	@Override
-	public void render(GameContainer gc, StateBasedGame sbg, Graphics grphcs) throws SlickException {
+	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
+		g.scale(MyGame.PIXEL_SIZE, MyGame.PIXEL_SIZE);
+		// render tiles
+		level.getSpriteSheet().startUse();
 		for(int y=0; y<level.getHeight(); y++){
 			for(int x=0; x<level.getWidth(); x++){
 				level.getTile(x, y).draw(
-						Math.round((x - camX) * MyGame.TILE_SIZE * MyGame.PIXEL_SIZE + gc.getWidth() / 2f), 
-						Math.round((y - camY) * MyGame.TILE_SIZE * MyGame.PIXEL_SIZE + gc.getHeight() / 2f));
+						Math.round((x - camX) * MyGame.TILE_SIZE + gc.getWidth() / 2f / MyGame.PIXEL_SIZE), 
+						Math.round((y - camY) * MyGame.TILE_SIZE + gc.getHeight() / 2f / MyGame.PIXEL_SIZE));
 			}
 		}
+		level.getSpriteSheet().endUse();
+		//render entities
+		PlayerEntity.ffs.startUse();
 		for(Entity e : level){
-			e.draw(Math.round((e.x - camX) * MyGame.TILE_SIZE * MyGame.PIXEL_SIZE + gc.getWidth() / 2f), 
-					Math.round((e.y - camY) * MyGame.TILE_SIZE * MyGame.PIXEL_SIZE + gc.getHeight() / 2f));
+			e.draw(Math.round((e.x - camX) * MyGame.TILE_SIZE + gc.getWidth() / 2f / MyGame.PIXEL_SIZE), 
+					Math.round((e.y - camY) * MyGame.TILE_SIZE + gc.getHeight() / 2f / MyGame.PIXEL_SIZE));
 		}
+		PlayerEntity.ffs.endUse();
 	}
 	
 	private void updateCamera(){
@@ -117,10 +124,14 @@ public final class GameplayState extends BasicGameState {
 				e.tick(level, i,
 						in.isKeyDown(Input.KEY_LEFT),
 						in.isKeyDown(Input.KEY_RIGHT),
-						in.isKeyDown(Input.KEY_SPACE),
-						in.isKeyDown(Input.KEY_LCONTROL));
+						in.isKeyDown(Input.KEY_UP),
+						in.isKeyDown(Input.KEY_DOWN),
+						in.isKeyDown(Input.KEY_C),
+						in.isKeyDown(Input.KEY_X),
+						in.isKeyDown(Input.KEY_V),
+						in.isKeyDown(Input.KEY_B));
 			} else {
-				e.tick(level, i, false, false, false, false);
+				e.tick(level, i, false, false, false, false, false, false, false, false);
 			}
 		}
 		updateCamera();

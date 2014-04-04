@@ -6,6 +6,7 @@ package jump.level;
 
 import jump.AssetLoader;
 import jump.FlippableSpriteSheet;
+import jump.MyGame;
 import org.newdawn.slick.Animation;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SpriteSheet;
@@ -43,9 +44,9 @@ public final class PlayerEntity extends Entity {
 	public float getVxOnKeyPressed(boolean run) {
 		float v;
 		if((state == EntityState.fall) || (state == EntityState.jump)){
-			v = 3f;
+			v = 2f;
 		} else {
-			v = 4f;
+			v = 3f;
 		}
 		if(run){
 			v *= 1.5f;
@@ -55,7 +56,7 @@ public final class PlayerEntity extends Entity {
 
 	@Override
 	public float getAyOnUpPressed() {
-		return Level.GRAVITY * 0.7f;
+		return MyGame.GRAVITY * 0.7f;
 	}
 
 	@Override
@@ -69,8 +70,8 @@ public final class PlayerEntity extends Entity {
 	}
 	
 	@Override
-	public boolean isMovable() {
-		return true;
+	public EntityInputMode getInputMode() {
+		return EntityInputMode.player;
 	}
 
 	@Override
@@ -104,7 +105,7 @@ public final class PlayerEntity extends Entity {
 	}
 
 	@Override
-	public void tickInternal(Level level, int ms, boolean leftPressed, boolean rightPressed, boolean upPressed, boolean runPressed) {
+	public void tickInternal(Level level, int ms) {
 	}
 
 	@Override
